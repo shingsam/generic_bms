@@ -1,0 +1,50 @@
+name: "Generic BMS - Development"
+description: "Project Test Generic BMS"
+version: "1.1dev"
+slug: "bms_generic_dev"
+url: "https://github.com/shingsam/generic_bms"
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+
+uart: true
+usb: true
+
+options:
+  mqtt_host: "0.0.0.0"
+  mqtt_port: 1883
+  mqtt_user: "mqtt-users"
+  mqtt_password: "mqtt-users"
+  mqtt_ha_discovery: true
+  mqtt_ha_discovery_topic: "homeassistant"
+  mqtt_base_topic: "generic_bms"
+  connection_type: "Serial"
+  bms_ip: "0.0.0.0"
+  bms_port: 5000
+  bms_serial: "/dev/ttyUSB0"
+  scan_interval: 5
+  debug_output: 0
+  force_pack_offset: 0
+  zero_pad_number_cells: 0
+  zero_pad_number_packs: 0
+schema:
+  mqtt_host: str
+  mqtt_port: int
+  mqtt_user: str
+  mqtt_password: str
+  mqtt_ha_discovery: bool
+  mqtt_ha_discovery_topic: str
+  mqtt_base_topic: str
+  connection_type: list(IP|Serial)
+  bms_ip: str
+  bms_port: int
+  bms_serial: str
+  scan_interval: int
+  debug_output: int
+  force_pack_offset: "int?"
+  zero_pad_number_cells: "int?"
+  zero_pad_number_packs: "int?"

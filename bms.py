@@ -865,9 +865,9 @@ def bms_getAnalogData(bms,batNumber):
             except Exception as e:
                 print("Error parsing BMS analog data, missing pack"  + str(p).zfill(config['zero_pad_number_packs']) + " design capacity: ", str(e))
 
-            byte_index += 2
+            #byte_index += 2
 
-            #byte_index += int(config['force_pack_offset'])
+            byte_index += int(config['force_pack_offset'])
 
             #Test for non signed value (matching cell count), to skip possible INFOFLAG present in data
             if p < packs: #Test - Is there more packs to read?
@@ -1130,7 +1130,7 @@ while code_running == True:
     if bms_connected == True:
         if mqtt_connected == True:
 
-            success, data = bms_getAnalogData(bms,batNumber=FFH)
+            success, data = bms_getAnalogData(bms,batNumber=90H)
             if success != True:
                 print("Error retrieving BMS analog data: " + data)
             time.sleep(scan_interval/3)

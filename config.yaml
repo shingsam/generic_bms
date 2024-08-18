@@ -15,7 +15,7 @@ uart: true
 usb: true
 
 options:
-  mqtt_host: "0.0.0.0"
+  mqtt_host: "homeassistant.local"
   mqtt_port: 1883
   mqtt_user: "mqtt-users"
   mqtt_password: "mqtt-users"

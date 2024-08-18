@@ -1132,8 +1132,8 @@ while code_running == True:
 
             #success, data = bms_getAnalogData(bms,batNumber=255)
             success, data = bms_getAnalogData(bms,batNumber=1)
-            time.sleep(scan_interval/3)
             success, data = bms_getAnalogData(bms,batNumber=2)
+            #time.sleep(scan_interval/3)
             if success != True:
                 print("Error retrieving BMS analog data: " + data)
             time.sleep(scan_interval/3)

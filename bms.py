@@ -948,6 +948,7 @@ def bms_getWarnInfo(bms):
         return '00'
 
     try:
+        # Read number of packs
         packsW = int(get_hex_value(byte_index), 16)
         byte_index += 2
         if print_initial:
@@ -1084,6 +1085,7 @@ def bms_getWarnInfo(bms):
         return False, f"Error parsing BMS warning data: {e}"
 
     return True, True
+
 
 print("Connecting to BMS...")
 bms,bms_connected = bms_connect(config['bms_ip'],config['bms_port'])

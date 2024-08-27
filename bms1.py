@@ -176,9 +176,9 @@ def ha_discovery():
         disc_payload['availability_topic'] = config['mqtt_base_topic'] + "/availability"
 
         device = {}
-        device['manufacturer'] = "BMS Pace"
+        device['manufacturer'] = "Generic BMS"
         device['model'] = "AM-x"
-        device['identifiers'] = "bmspace_" + bms_sn
+        device['identifiers'] = "generic_bms_" + bms_sn
         device['name'] = "Generic Lithium"
         device['sw_version'] = bms_version
         disc_payload['device'] = device

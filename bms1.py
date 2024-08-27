@@ -67,7 +67,7 @@ def on_disconnect(client, userdata, rc):
     mqtt_connected = False
 
 
-client = mqtt.Client("bmspace")
+client = mqtt.Client("generic_bms")
 client.on_connect = on_connect
 client.on_disconnect = on_disconnect
 #client.on_message = on_message
@@ -933,7 +933,7 @@ def bms_getPackCapacity(bms):
     return True,True
 
 def bms_getWarnInfo(bms):
-    byte_index = 2
+    byte_index = 2  # Starting byte index for INFO
     warnings = ""
 
     success, inc_data = bms_request(bms, cid2=constants.cid2WarnInfo, info=b'FF')
@@ -941,20 +941,25 @@ def bms_getWarnInfo(bms):
         return False, inc_data
 
     def get_hex_value(index, length=2):
+        """ Safely extract hex value from incoming data """
         if len(inc_data) >= index + length:
             return inc_data[index:index + length].hex()
         print(f"Data length is insufficient for index {index} and length {length}")
         return '00'
 
     try:
-        packsW = int(get_hex_value(byte_index))
+        packsW = int(get_hex_value(byte_index), 16)
         byte_index += 2
         if print_initial:
             print(f"Packs for warnings: {packsW}")
 
         for p in range(1, packsW + 1):
-            cellsW = int(get_hex_value(byte_index))
+            print(f"Processing pack {p}...")
+            cellsW = int(get_hex_value(byte_index), 16)
             byte_index += 2
+
+            if print_initial:
+                print(f"Number of cells for pack {p}: {cellsW}")
 
             # Process cell warnings
             for c in range(1, cellsW + 1):
@@ -965,7 +970,7 @@ def bms_getWarnInfo(bms):
                 byte_index += 2
 
             # Process temperature warnings
-            tempsW = int(get_hex_value(byte_index))
+            tempsW = int(get_hex_value(byte_index), 16)
             byte_index += 2
             for t in range(1, tempsW + 1):
                 temp_hex = get_hex_value(byte_index)
@@ -1071,20 +1076,14 @@ def bms_getWarnInfo(bms):
             warnings = ""
 
             # Skip possible INFOFLAG present in data if the number of cells does not match
-            if byte_index < len(inc_data) and cellsW != int(get_hex_value(byte_index)):
+            if (byte_index < len(inc_data)) and (cellsW != int(get_hex_value(byte_index), 16)):
                 byte_index += 2
 
-    except ValueError as ve:
-        print(f"ValueError during parsing: {ve}")
-        return False, f"ValueError during parsing: {ve}"
     except Exception as e:
         print(f"Error parsing BMS warning data: {e}")
         return False, f"Error parsing BMS warning data: {e}"
 
     return True, True
-
-
-
 
 print("Connecting to BMS...")
 bms,bms_connected = bms_connect(config['bms_ip'],config['bms_port'])

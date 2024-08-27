@@ -1076,10 +1076,6 @@ def bms_getWarnInfo(bms):
 
             warnings = ""
 
-            # Skip possible INFOFLAG present in data if the number of cells does not match
-            if (byte_index < len(inc_data)) and (cellsW != int(get_hex_value(byte_index), 16)):
-                byte_index += 2
-
     except Exception as e:
         print(f"Error parsing BMS warning data: {e}")
         return False, f"Error parsing BMS warning data: {e}"
@@ -1087,7 +1083,7 @@ def bms_getWarnInfo(bms):
     return True, True
 
 
-print("Connecting to BMS...")
+print("Connecting to BMS.1.2.3..")
 bms,bms_connected = bms_connect(config['bms_ip'],config['bms_port'])
 
 client.publish(config['mqtt_base_topic'] + "/availability","offline")

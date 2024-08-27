@@ -932,25 +932,6 @@ def bms_getPackCapacity(bms):
 
     return True,True
 
-def parse_bms_warning_data(info):
-    try:
-        warnings = {}
-        for i in range(0, len(info), 2):  # Example: parse 2 bytes at a time
-            byte_str = info[i:i+2]
-            if byte_str:
-                warnings[i] = int(byte_str, 16)
-            else:
-                print(f"Warning: Empty byte string at index {i}")
-        return warnings
-    except Exception as e:
-        print(f"Error parsing BMS warning data: {e}")
-        return {}
-
-def process_bms_data(info):
-    warnings = parse_bms_warning_data(info)
-    # Further processing of warnings if needed
-    print(f"Parsed Warnings: {warnings}")
-
 
 def bms_getWarnInfo(bms):
 
@@ -1126,8 +1107,26 @@ def bms_getWarnInfo(bms):
 
     return True,True
 
+def parse_bms_warning_data(info):
+    try:
+        warnings = {}
+        for i in range(0, len(info), 2):  # Example: parse 2 bytes at a time
+            byte_str = info[i:i+2]
+            if byte_str:
+                warnings[i] = int(byte_str, 16)
+            else:
+                print(f"Warning: Empty byte string at index {i}")
+        return warnings
+    except Exception as e:
+        print(f"Error parsing BMS warning data: {e}")
+        return {}
 
-print("Connecting to BMS...")
+def process_bms_data(info):
+    warnings = parse_bms_warning_data(info)
+    # Further processing of warnings if needed
+    print(f"Parsed Warnings: {warnings}")
+
+print("Connecting to BMS.1.2.3...")
 bms,bms_connected = bms_connect(config['bms_ip'],config['bms_port'])
 
 client.publish(config['mqtt_base_topic'] + "/availability","offline")

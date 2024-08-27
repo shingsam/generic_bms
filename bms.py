@@ -996,11 +996,6 @@ def bms_getWarnInfo(bms):
                 warnings += ", "
             byte_index += 2
 
-            # Publish Protection State 1
-            client.publish(config['mqtt_base_topic'] + f"/pack_{str(p).zfill(config['zero_pad_number_packs'])}/prot_short_circuit", str(protectState1 >> 6 & 1))
-            client.publish(config['mqtt_base_topic'] + f"/pack_{str(p).zfill(config['zero_pad_number_packs'])}/prot_discharge_current", str(protectState1 >> 5 & 1))
-            client.publish(config['mqtt_base_topic'] + f"/pack_{str(p).zfill(config['zero_pad_number_packs'])}/prot_charge_current", str(protectState1 >> 4 & 1))
-
             # Process Protection State 2
             protectState2 = int(get_hex_value(byte_index), 16)
             if protectState2 > 0:
@@ -1008,9 +1003,6 @@ def bms_getWarnInfo(bms):
                 warnings += " | ".join(constants.protectState2.get(x + 1, "Unknown") for x in range(8) if protectState2 & (1 << x))
                 warnings += ", "
             byte_index += 2
-
-            # Publish Protection State 2
-            client.publish(config['mqtt_base_topic'] + f"/pack_{str(p).zfill(config['zero_pad_number_packs'])}/fully", str(protectState2 >> 7 & 1))
 
             # Process Instruction State
             instructionState = int(get_hex_value(byte_index), 16)
@@ -1081,6 +1073,7 @@ def bms_getWarnInfo(bms):
         return False, f"Error parsing BMS warning data: {e}"
 
     return True, True
+
 
 
 print("Connecting to BMS.1.2.3..")

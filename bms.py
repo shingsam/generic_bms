@@ -1124,7 +1124,6 @@ if success != True:
     print("Error retrieving BMS and pack serial numbers. This is required for HA Discovery. Exiting...")
     quit()
 
-
 def parse_hex_data(hex_data):
     try:
         return int(hex_data, 16)
@@ -1141,68 +1140,51 @@ def process_bms_data(data):
     except Exception as e:
         print(f"Error processing BMS data: {e}")
 
-# Main loop
-def main_loop():
-    bms_connected = False
-    mqtt_connected = False
-    scan_interval = 30  # Example scan interval in seconds
-    repub_discovery = 0
-    print_initial = True
 
-    # Initialize MQTT client
-    client = mqtt.Client()
-    client.connect(config['mqtt_host'], config['mqtt_port'], 60)
-    client.loop_start()
+while code_running == True:
 
-    while True:
-        if bms_connected:
-            if mqtt_connected:
-                # Retrieve BMS analog data
-                success, data = bms_getAnalogData(bms, batNumber=255)
-                if not success:
-                    print("Error retrieving BMS analog data: " + data)
-                else:
-                    process_bms_data(data)
-                time.sleep(scan_interval / 3)
+    if bms_connected == True:
+        if mqtt_connected == True:
 
-                # Retrieve BMS pack capacity
-                success, data = bms_getPackCapacity(bms)
-                if not success:
-                    print("Error retrieving BMS pack capacity: " + data)
-                time.sleep(scan_interval / 3)
+            success, data = bms_getAnalogData(bms,batNumber=255)
+            if success != True:
+                print("Error retrieving BMS analog data: " + data)
+            time.sleep(scan_interval/3)
 
-                # Retrieve BMS warning info
-                success, data = bms_getWarnInfo(bms)
-                if not success:
-                    print("Error retrieving BMS warning info: " + data)
-                time.sleep(scan_interval / 3)
+            success, data = bms_getPackCapacity(bms)
+            if success != True:
+                print("Error retrieving BMS pack capacity: " + data)
+            time.sleep(scan_interval/3)
+            success, data = bms_getWarnInfo(bms)
+            if success != True:
+                print("Error retrieving BMS warning info: " + data)
+            time.sleep(scan_interval/3)
 
-                if print_initial:
-                    ha_discovery()
-                    print_initial = False
+            if print_initial:
+                ha_discovery()
+                
+            client.publish(config['mqtt_base_topic'] + "/availability","online")
 
-                client.publish(config['mqtt_base_topic'] + "/availability", "online")
+            print_initial = False
+            
 
-                # Handle Home Assistant discovery republishing
-                repub_discovery += 1
-                if repub_discovery * scan_interval > 3600:
-                    repub_discovery = 0
-                    print_initial = True
-
-            else:  # MQTT not connected
-                client.loop_stop()
-                print("MQTT disconnected, trying to reconnect...")
-                client.connect(config['mqtt_host'], config['mqtt_port'], 60)
-                client.loop_start()
-                time.sleep(5)
+            repub_discovery += 1
+            if repub_discovery*scan_interval > 3600:
+                repub_discovery = 0
                 print_initial = True
-        else:  # BMS not connected
-            print("BMS disconnected, trying to reconnect...")
-            bms, bms_connected = bms_connect(config['bms_ip'], config['bms_port'])
-            client.publish(config['mqtt_base_topic'] + "/availability", "offline")
+        
+        else: #MQTT not connected
+            client.loop_stop()
+            print("MQTT disconnected, trying to reconnect...")
+            client.connect(config['mqtt_host'], config['mqtt_port'], 60)
+            client.loop_start()
             time.sleep(5)
             print_initial = True
+    else: #BMS not connected
+        print("BMS disconnected, trying to reconnect...")
+        bms,bms_connected = bms_connect(config['bms_ip'],config['bms_port'])
+        client.publish(config['mqtt_base_topic'] + "/availability","offline")
+        time.sleep(5)
+        print_initial = True
 
-        time.sleep(scan_interval)
-
-    client.loop_stop()
+client.loop_stop()

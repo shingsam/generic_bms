@@ -937,27 +937,23 @@ def bms_getWarnInfo(bms):
     warnings = ""
 
     success, inc_data = bms_request(bms, cid2=constants.cid2WarnInfo, info=b'FF')
-
     if not success:
         return False, inc_data
 
-    try:
-        # Ensure the length of inc_data is sufficient before accessing it
-        def get_hex_value(index, length=2):
-            if len(inc_data) >= index + length:
-                return inc_data[index:index + length].hex()
-            else:
-                raise ValueError("Insufficient data length")
+    def get_hex_value(index, length=2):
+        if len(inc_data) >= index + length:
+            return inc_data[index:index + length].hex()
+        print(f"Data length is insufficient for index {index} and length {length}")
+        return '00'
 
-        # Read the number of packs
-        packsW = int(get_hex_value(byte_index), 16)
+    try:
+        packsW = int(get_hex_value(byte_index))
         byte_index += 2
         if print_initial:
-            print("Packs for warnings: " + str(packsW))
+            print(f"Packs for warnings: {packsW}")
 
         for p in range(1, packsW + 1):
-            # Read the number of cells
-            cellsW = int(get_hex_value(byte_index), 16)
+            cellsW = int(get_hex_value(byte_index))
             byte_index += 2
 
             # Process cell warnings
@@ -968,8 +964,8 @@ def bms_getWarnInfo(bms):
                     warnings += f"cell {c} {warn}, "
                 byte_index += 2
 
-            # Read and process temperature warnings
-            tempsW = int(get_hex_value(byte_index), 16)
+            # Process temperature warnings
+            tempsW = int(get_hex_value(byte_index))
             byte_index += 2
             for t in range(1, tempsW + 1):
                 temp_hex = get_hex_value(byte_index)
@@ -978,7 +974,7 @@ def bms_getWarnInfo(bms):
                     warnings += f"temp {t} {warn}, "
                 byte_index += 2
 
-            # Read and process various warnings
+            # Process various warnings
             for category, category_name in [("charge current", "charge current"), ("total voltage", "total voltage"), ("discharge current", "discharge current")]:
                 category_hex = get_hex_value(byte_index)
                 if category_hex != '00':
@@ -990,10 +986,7 @@ def bms_getWarnInfo(bms):
             protectState1 = int(get_hex_value(byte_index), 16)
             if protectState1 > 0:
                 warnings += "Protection State 1: "
-                for x in range(0, 8):
-                    if (protectState1 & (1 << x)):
-                        warnings += constants.protectState1.get(x + 1, "Unknown") + " | "
-                warnings = warnings.rstrip("| ")
+                warnings += " | ".join(constants.protectState1.get(x + 1, "Unknown") for x in range(8) if protectState1 & (1 << x))
                 warnings += ", "
             byte_index += 2
 
@@ -1006,10 +999,7 @@ def bms_getWarnInfo(bms):
             protectState2 = int(get_hex_value(byte_index), 16)
             if protectState2 > 0:
                 warnings += "Protection State 2: "
-                for x in range(0, 8):
-                    if (protectState2 & (1 << x)):
-                        warnings += constants.protectState2.get(x + 1, "Unknown") + " | "
-                warnings = warnings.rstrip("| ")
+                warnings += " | ".join(constants.protectState2.get(x + 1, "Unknown") for x in range(8) if protectState2 & (1 << x))
                 warnings += ", "
             byte_index += 2
 
@@ -1031,10 +1021,7 @@ def bms_getWarnInfo(bms):
             controlState = int(get_hex_value(byte_index), 16)
             if controlState > 0:
                 warnings += "Control State: "
-                for x in range(0, 8):
-                    if (controlState & (1 << x)):
-                        warnings += constants.controlState.get(x + 1, "Unknown") + " | "
-                warnings = warnings.rstrip("| ")
+                warnings += " | ".join(constants.controlState.get(x + 1, "Unknown") for x in range(8) if controlState & (1 << x))
                 warnings += ", "
             byte_index += 2
 
@@ -1042,10 +1029,7 @@ def bms_getWarnInfo(bms):
             faultState = int(get_hex_value(byte_index), 16)
             if faultState > 0:
                 warnings += "Fault State: "
-                for x in range(0, 8):
-                    if (faultState & (1 << x)):
-                        warnings += constants.faultState.get(x + 1, "Unknown") + " | "
-                warnings = warnings.rstrip("| ")
+                warnings += " | ".join(constants.faultState.get(x + 1, "Unknown") for x in range(8) if faultState & (1 << x))
                 warnings += ", "
             byte_index += 2
 
@@ -1059,20 +1043,14 @@ def bms_getWarnInfo(bms):
             warnState1 = int(get_hex_value(byte_index), 16)
             if warnState1 > 0:
                 warnings += "Warning State 1: "
-                for x in range(0, 8):
-                    if (warnState1 & (1 << x)):
-                        warnings += constants.warnState1.get(x + 1, "Unknown") + " | "
-                warnings = warnings.rstrip("| ")
+                warnings += " | ".join(constants.warnState1.get(x + 1, "Unknown") for x in range(8) if warnState1 & (1 << x))
                 warnings += ", "
             byte_index += 2
 
             warnState2 = int(get_hex_value(byte_index), 16)
             if warnState2 > 0:
                 warnings += "Warning State 2: "
-                for x in range(0, 8):
-                    if (warnState2 & (1 << x)):
-                        warnings += constants.warnState2.get(x + 1, "Unknown") + " | "
-                warnings = warnings.rstrip("| ")
+                warnings += " | ".join(constants.warnState2.get(x + 1, "Unknown") for x in range(8) if warnState2 & (1 << x))
                 warnings += ", "
             byte_index += 2
 
@@ -1093,14 +1071,18 @@ def bms_getWarnInfo(bms):
             warnings = ""
 
             # Skip possible INFOFLAG present in data if the number of cells does not match
-            if (byte_index < len(inc_data)) and (cellsW != int(get_hex_value(byte_index), 16)):
+            if byte_index < len(inc_data) and cellsW != int(get_hex_value(byte_index)):
                 byte_index += 2
 
+    except ValueError as ve:
+        print(f"ValueError during parsing: {ve}")
+        return False, f"ValueError during parsing: {ve}"
     except Exception as e:
         print(f"Error parsing BMS warning data: {e}")
         return False, f"Error parsing BMS warning data: {e}"
 
     return True, True
+
 
 
 

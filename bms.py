@@ -136,33 +136,83 @@ def bms_sendData(comms,request=''):
             # global bms_connected
             return False
 
-def bms_get_data(comms):
-    try:
-        if connection_type == "Serial":
-            inc_data = comms.readline()
-        else:
-            temp = bytes()
+
+# Let's refactor the script to handle multiple packs and improve error handling.
+# I'll create a new function that processes each pack separately and handles potential errors during parsing.
+
+def bms_get_data(comms, packs=1):
+    data = {}
+    for p in range(1, packs + 1):
+        try:
+            if connection_type == "Serial":
+                inc_data = comms.readline()
+            else:
+                temp = bytes()
+                while len(temp) == 0 or temp[-1] != 13:
+                    temp = temp + comms.recv(4096)
+
+                temp2 = temp.split(b'\r')
+                # Decide which one to take:
+                for element in range(0, len(temp2)):
+                    SOI = hex(ord(temp2[element][0:1]))
+                    if SOI == '0x7e':
+                        inc_data = temp2[element] + b'\r'
             
-            while len(temp) == 0 or temp[-1] != 13:
-                temp = temp + comms.recv(4096)
+            # Placeholder for actual data parsing logic
+            # Assuming each pack's data is parsed and added to the data dictionary
+            data[f'pack_{p}'] = parse_bms_data(inc_data)  # Hypothetical function to parse data
+            
+        except (IOError, ValueError) as e:
+            print(f"Error retrieving data for Pack {p}: {e}")
+            data[f'pack_{p}'] = None  # Mark the pack's data as None if there's an error
 
-            temp2 = temp.split(b'\r')
-            # Decide which one to take:
-            for element in range(0,len(temp2)):
-                SOI = hex(ord(temp2[element][0:1]))
-                if SOI == '0x7e':
-                    inc_data = temp2[element] + b'\r'
-                    break
+    return data
 
-            if (len(temp2) > 2) & (debug_output > 0):
-                print("Multiple EOIs detected")
-                print("...for incoming data: " + str(temp) + " |Hex: " + str(temp.hex(' ')))
+def parse_bms_data(raw_data):
+    # Hypothetical function to parse raw data from the BMS
+    # This would include parsing voltage, temperature, and other metrics
+    # For now, returning the raw data for demonstration purposes
+    return raw_data
+
+# Assuming that the main script logic would call bms_get_data with the correct number of packs
+packs = 2  # Example: Set this based on actual BMS packs, or load dynamically
+comms, connected = bms_connect()  # Hypothetical function to establish connection
+if connected:
+    bms_data = bms_get_data(comms, packs=packs)
+    print(bms_data)  # Output the collected data
+
+# The rest of the script would continue to process or publish this data via MQTT
+
+
+
+
+#def bms_get_data(comms):
+ #   try:
+  #      if connection_type == "Serial":
+  #          inc_data = comms.readline()
+  #      else:
+  #          temp = bytes()
+            
+  #          while len(temp) == 0 or temp[-1] != 13:
+   #             temp = temp + comms.recv(4096)
+
+   #         temp2 = temp.split(b'\r')
+            #/ Decide which one to take:
+    #        for element in range(0,len(temp2)):
+   #             SOI = hex(ord(temp2[element][0:1]))
+   #             if SOI == '0x7e':
+   #                 inc_data = temp2[element] + b'\r'
+   #                 break
+
+  #          if (len(temp2) > 2) & (debug_output > 0):
+  #              print("Multiple EOIs detected")
+  #              print("...for incoming data: " + str(temp) + " |Hex: " + str(temp.hex(' ')))
                 
-        return inc_data
-    except Exception as e:
-        print("BMS socket receive error: %s" % e)
-        # global bms_connected
-        return False
+ #       return inc_data
+ #   except Exception as e:
+ #       print("BMS socket receive error: %s" % e)
+ #       # global bms_connected
+ #       return False
 
 def ha_discovery():
 

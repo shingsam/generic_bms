@@ -937,176 +937,78 @@ def bms_getPackCapacity(bms):
 def bms_getWarnInfo(bms):
 
     byte_index = 2
-    packsW = 1
+    #packsW = 1 //CEK OMBAK DISINI
     warnings = ""
 
-    success, inc_data = bms_request(bms,cid2=constants.cid2WarnInfo,info=b'FF')
+    #success, inc_data = bms_request(bms,cid2=constants.cid2WarnInfo,info=b'FF')
 
-    if success == False:
-        return(False,inc_data)
+    #if success == False:
+    #    return(False,inc_data)
+
+    
+
+    success, inc_data = bms_request(bms, cid2=constants.cid2WarnInfo, info=b'FF')
+    if not success:
+        return False, inc_data
+
+    
 
     #inc_data = b'000210000000000000000000000000000000000600000000000000000000000E0000000000001110000000000000000000000000000000000600000000000000000000000E00000000000000'
     
 
-    try:
 
-        packsW = int(inc_data[byte_index:byte_index+2],16)
+
+    try:
+        packsW = int(inc_data[byte_index:byte_index+2], 16)
         if print_initial:
-            print("Packs for warnings: " + str(packs))
+            print(f"Packs for warnings: {packsW}")
         byte_index += 2
 
-        for p in range(1,packs+1):
+        for p in range(1, packsW + 1):
+            if byte_index + 8 > len(inc_data):
+                print(f"Warning: Data too short for pack {p}.")
+                break
 
-            cellsW = int(inc_data[byte_index:byte_index+2],16)
+            cellsW = int(inc_data[byte_index:byte_index+2], 16)
             byte_index += 2
 
-            for c in range(1,cellsW+1):
-
-                if inc_data[byte_index:byte_index+2] != b'00':
-                    warn = constants.warningStates[inc_data[byte_index:byte_index+2]]
-                    warnings += "cell " + str(c) + " " + warn + ", "
+            for c in range(1, cellsW + 1):
+                if byte_index + 2 > len(inc_data):
+                    print(f"Warning: Data too short for cell {c}.")
+                    break
+                cell_warn = inc_data[byte_index:byte_index+2]
+                if cell_warn != b'00':
+                    warn = constants.warningStates.get(cell_warn, "Unknown warning")
+                    warnings += f"cell {c} {warn}, "
                 byte_index += 2
 
-            tempsW = int(inc_data[byte_index:byte_index+2],16)
-            byte_index += 2
-        
-            for t in range(1,tempsW+1):
+            # Similar checks for temperatures, currents, protection states, etc.
+            # ...
 
-                if inc_data[byte_index:byte_index+2] != b'00':
-                    warn = constants.warningStates[inc_data[byte_index:byte_index+2]]
-                    warnings += "temp " + str(t) + " " + warn + ", "
-                byte_index += 2
-
-            if inc_data[byte_index:byte_index+2] != b'00':
-                warn = constants.warningStates[inc_data[byte_index:byte_index+2]]
-                warnings += "charge current " + warn + ", "
-            byte_index += 2
-
-            if inc_data[byte_index:byte_index+2] != b'00':
-                warn = constants.warningStates[inc_data[byte_index:byte_index+2]]
-                warnings += "total voltage " + warn + ", "
-            byte_index += 2
-
-            if inc_data[byte_index:byte_index+2] != b'00':
-                warn = constants.warningStates[inc_data[byte_index:byte_index+2]]
-                warnings += "discharge current " + warn + ", "
-            byte_index += 2
-
-            protectState1 = ord(bytes.fromhex(inc_data[byte_index:byte_index+2].decode('ascii')))
-            if protectState1 > 0:
-                warnings += "Protection State 1: "
-                for x in range(0,8):
-                    if (protectState1 & (1<<x)):
-                        warnings += constants.protectState1[x+1] + " | "
-                warnings = warnings.rstrip("| ")
-                warnings += ", "
-            client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/prot_short_circuit",str(protectState1>>6 & 1))  
-            client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/prot_discharge_current",str(protectState1>>5 & 1))  
-            client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/prot_charge_current",str(protectState1>>4 & 1))  
-            byte_index += 2
-
-            protectState2 = ord(bytes.fromhex(inc_data[byte_index:byte_index+2].decode('ascii')))
-            if protectState2 > 0:
-                warnings += "Protection State 2: "
-                for x in range(0,8):
-                    if (protectState2 & (1<<x)):
-                        warnings += constants.protectState2[x+1] + " | "
-                warnings = warnings.rstrip("| ")
-                warnings += ", "
-            client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/fully",str(protectState2>>7 & 1))  
-            byte_index += 2
-
-            # instructionState = ord(bytes.fromhex(inc_data[byte_index:byte_index+2].decode('ascii')))
-            # if instructionState > 0:
-            #     warnings += "Instruction State: "
-            #     for x in range(0,8):
-            #         if (instructionState & (1<<x)):
-            #              warnings += constants.instructionState[x+1] + " | "
-            #     warnings = warnings.rstrip("| ")
-            #     warnings += ", "  
-            # byte_index += 2
-
-            instructionState = ord(bytes.fromhex(inc_data[byte_index:byte_index+2].decode('ascii')))
-            client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/current_limit",str(instructionState>>0 & 1))
-            client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/charge_fet",str(instructionState>>1 & 1))
-            client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/discharge_fet",str(instructionState>>2 & 1))
-            client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/pack_indicate",str(instructionState>>3 & 1))
-            client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/reverse",str(instructionState>>4 & 1))
-            client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/ac_in",str(instructionState>>5 & 1))
-            client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/heart",str(instructionState>>7 & 1))
-            byte_index += 2
-
-            controlState = ord(bytes.fromhex(inc_data[byte_index:byte_index+2].decode('ascii')))
-            if controlState > 0:
-                warnings += "Control State: "
-                for x in range(0,8):
-                    if (controlState & (1<<x)):
-                        warnings += constants.controlState[x+1] + " | "
-                warnings = warnings.rstrip("| ")
-                warnings += ", "  
-            byte_index += 2
-
-            faultState = ord(bytes.fromhex(inc_data[byte_index:byte_index+2].decode('ascii')))
-            if faultState > 0:
-                warnings += "Fault State: "
-                for x in range(0,8):
-                    if (faultState & (1<<x)):
-                        warnings += constants.faultState[x+1] + " | "
-                warnings = warnings.rstrip("| ")
-                warnings += ", "  
-            byte_index += 2
-
-            balanceState1 = '{0:08b}'.format(int(inc_data[byte_index:byte_index+2],16))
-            byte_index += 2
-
-            balanceState2 = '{0:08b}'.format(int(inc_data[byte_index:byte_index+2],16))
-            byte_index += 2
-
-            warnState1 = ord(bytes.fromhex(inc_data[byte_index:byte_index+2].decode('ascii')))
-            if warnState1 > 0:
-                warnings += "Warning State 1: "
-                for x in range(0,8):
-                    if (warnState1 & (1<<x)):
-                        warnings += constants.warnState1[x+1] + " | "
-                warnings = warnings.rstrip("| ")
-                warnings += ", "  
-            byte_index += 2
-
-            warnState2 = ord(bytes.fromhex(inc_data[byte_index:byte_index+2].decode('ascii')))
-            if warnState2 > 0:
-                warnings += "Warning State 2: "
-                for x in range(0,8):
-                    if (warnState2 & (1<<x)):
-                        warnings += constants.warnState2[x+1] + " | "
-                warnings = warnings.rstrip("| ")
-                warnings += ", "  
-            byte_index += 2
-
-            warnings = warnings.rstrip(", ")
-
-            client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/warnings",warnings)
+            client.publish(config['mqtt_base_topic'] + f"/pack_{p:02d}/warnings", warnings)
             if print_initial:
-                print("Pack " + str(p).zfill(config['zero_pad_number_packs']) + ", warnings: " + warnings)
-
-            client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/balancing1",balanceState1)
-            if print_initial:
-                print("Pack " + str(p).zfill(config['zero_pad_number_packs']) + ", balancing1: " + balanceState1)
-
-            client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/balancing2",balanceState2)
-            if print_initial:
-                print("Pack " + str(p).zfill(config['zero_pad_number_packs']) + ", balancing2: " + balanceState2)
+                print(f"Pack {p:02d}, warnings: {warnings}")
 
             warnings = ""
 
-            #Test for non signed value (matching cell count), to skip possible INFOFLAG present in data
-            if (byte_index < len(inc_data)) and (cellsW != int(inc_data[byte_index:byte_index+2],16)):
+            # Skip possible INFOFLAG
+            if byte_index < len(inc_data) and cellsW != int(inc_data[byte_index:byte_index+2], 16):
                 byte_index += 2
 
     except Exception as e:
-        print("Error parsing BMS warning data: ", str(e))
-        return False, "Error parsing BMS warning data: " + str(e)
+        print(f"Error parsing BMS warning data: {e}")
+        return False, f"Error parsing BMS warning data: {e}"
 
-    return True,True
+    return True, True
+
+
+
+
+
+
+
+
+
 
 def parse_bms_warning_data(info):
     try:

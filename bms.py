@@ -960,15 +960,7 @@ def bms_getWarnInfo(bms):
         print("Error: Incoming data is too short.")
         return False, "Incoming data is too short."
 
-
-
     try:
-        packsW = int(inc_data[byte_index:byte_index+2], 16)
-        if print_initial:
-            print(f"Packs for warnings: {packsW}")
-        byte_index += 2
-
-        try:
         packsW = int(inc_data[byte_index:byte_index+2], 16)
         byte_index += 2
 
@@ -977,37 +969,28 @@ def bms_getWarnInfo(bms):
                 print(f"Error: Insufficient data for pack {p}.")
                 break
 
+             # Example processing for the pack data
             cellsW = int(inc_data[byte_index:byte_index+2], 16)
             byte_index += 2
 
             for c in range(1, cellsW + 1):
-                if byte_index + 2 > len(inc_data):
-                    print(f"Warning: Data too short for cell {c}.")
-                    break
-                cell_warn = inc_data[byte_index:byte_index+2]
-                if cell_warn != b'00':
-                    warn = constants.warningStates.get(cell_warn, "Unknown warning")
+                if byte_index + 2 <= len(inc_data):
+                    warn = constants.warningStates.get(inc_data[byte_index:byte_index+2], "Unknown Warning")
                     warnings += f"cell {c} {warn}, "
                 byte_index += 2
-
-            # Similar checks for temperatures, currents, protection states, etc.
-            # ...
 
             client.publish(config['mqtt_base_topic'] + f"/pack_{p:02d}/warnings", warnings)
             if print_initial:
                 print(f"Pack {p:02d}, warnings: {warnings}")
 
-            warnings = ""
-
-            # Skip possible INFOFLAG
-            if byte_index < len(inc_data) and cellsW != int(inc_data[byte_index:byte_index+2], 16):
-                byte_index += 2
+            warnings = warnings.rstrip(", ")
+        client.publish(config['mqtt_base_topic'] + "/pack_" + str(p).zfill(config['zero_pad_number_packs']) + "/warnings", warnings)
+        if print_initial:
+            print(f"Pack {str(p).zfill(config['zero_pad_number_packs'])}, warnings: {warnings}")
 
     except Exception as e:
         print(f"Error parsing BMS warning data: {e}")
         return False, f"Error parsing BMS warning data: {e}"
-
-    return True, True
 
 
 

@@ -1150,45 +1150,16 @@ def parse_hex_data(hex_data):
         print(f"Error parsing hex data: {hex_data}")
         return None
 
-def process_bms_data(data):
-    try:
-        # Example parsing logic (update based on actual protocol)
-        pack_data = data.get('pack_data', '')
-        cell_voltages = [parse_hex_data(pack_data[i:i+4]) for i in range(0, len(pack_data), 4)]
-        print(f"Cell Voltages: {cell_voltages}")
-    except Exception as e:
-        print(f"Error processing BMS data: {e}")
-
-def get_and_process_pack_data(bms, pack_number):
-    success, data = bms_getAnalogData(bms, batNumber=pack_number)
-    if not success:
-        print(f"Error retrieving BMS analog data for pack {pack_number}: {data}")
-    else:
-        if not data:
-            print(f"No data received for pack {pack_number}.")
-        else:
-            # Process the data if needed
-            print(f"Data for pack {pack_number}: {data}")
-
 
 while code_running == True:
 
     if bms_connected == True:
         if mqtt_connected == True:
 
-        #    success, data = bms_getAnalogData(bms,batNumber=255)
-        #    if success != True:
-        #        print("Error retrieving BMS analog data: " + data)
-        #    time.sleep(scan_interval/3)
-
-            success, data = bms_getAnalogData(bms, batNumber=2)
-            if not success:
-                print(f"Error retrieving BMS data for pack 2: {data}")
-            else:
-            if not data:
-                print(f"No data received for pack 2.")
-            else:
-                print(f"Data for pack 2: {data}")
+            success, data = bms_getAnalogData(bms,batNumber=2)
+            if success != True:
+                print("Error retrieving BMS analog data: " + data)
+            time.sleep(scan_interval/3)
             
             success, data = bms_getPackCapacity(bms)
             if success != True:

@@ -895,7 +895,7 @@ def debug_bms_data(data):
     print(f"Data Segments: {[data[i:i+2] for i in range(0, len(data), 2)]}")
 
 # Call this function to debug incoming data
-debug_bms_data(inc_data)
+#debug_bms_data(data)
 
 
 

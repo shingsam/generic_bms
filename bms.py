@@ -888,6 +888,19 @@ def bms_getAnalogData(bms,batNumber):
 
     return True,True
 
+
+def debug_bms_data(data):
+    print(f"Raw Data: {data}")
+    print(f"Data Length: {len(data)}")
+    print(f"Data Segments: {[data[i:i+2] for i in range(0, len(data), 2)]}")
+
+# Call this function to debug incoming data
+debug_bms_data(inc_data)
+
+
+
+
+
 def bms_getPackCapacity(bms):
 
     byte_index = 0
@@ -935,26 +948,17 @@ def bms_getPackCapacity(bms):
 
 
 def bms_getWarnInfo(bms):
-
     byte_index = 2
-    #packsW = 1 //CEK OMBAK DISINI
     warnings = ""
-
-    #success, inc_data = bms_request(bms,cid2=constants.cid2WarnInfo,info=b'FF')
-
-    #if success == False:
-    #    return(False,inc_data)
-
-    
 
     success, inc_data = bms_request(bms, cid2=constants.cid2WarnInfo, info=b'FF')
     if not success:
         return False, inc_data
 
-    
-
-    #inc_data = b'000210000000000000000000000000000000000600000000000000000000000E0000000000001110000000000000000000000000000000000600000000000000000000000E00000000000000'
-    
+    # Validate data length
+    if len(inc_data) < 2:
+        print("Error: Incoming data is too short.")
+        return False, "Incoming data is too short."
 
 
 
@@ -964,9 +968,13 @@ def bms_getWarnInfo(bms):
             print(f"Packs for warnings: {packsW}")
         byte_index += 2
 
+        try:
+        packsW = int(inc_data[byte_index:byte_index+2], 16)
+        byte_index += 2
+
         for p in range(1, packsW + 1):
-            if byte_index + 8 > len(inc_data):
-                print(f"Warning: Data too short for pack {p}.")
+            if byte_index + 10 > len(inc_data):  # Adjust length check as needed
+                print(f"Error: Insufficient data for pack {p}.")
                 break
 
             cellsW = int(inc_data[byte_index:byte_index+2], 16)
@@ -1010,19 +1018,43 @@ def bms_getWarnInfo(bms):
 
 
 
+#def parse_bms_warning_data(info):
+#    try:
+#        warnings = {}
+#        for i in range(0, len(info), 2):  # Example: parse 2 bytes at a time
+#            byte_str = info[i:i+2]
+#            if byte_str:
+#                warnings[i] = int(byte_str, 16)
+#            else:
+#                print(f"Warning: Empty byte string at index {i}")
+#        return warnings
+#    except Exception as e:
+#        print(f"Error parsing BMS warning data: {e}")
+#        return {}
+
+
 def parse_bms_warning_data(info):
+    warnings = {}
     try:
-        warnings = {}
-        for i in range(0, len(info), 2):  # Example: parse 2 bytes at a time
+        if len(info) < 2:
+            print(f"Warning: Data is too short: {info}")
+            return warnings
+
+        for i in range(0, len(info), 2):
             byte_str = info[i:i+2]
-            if byte_str:
-                warnings[i] = int(byte_str, 16)
+            if len(byte_str) == 2:
+                warnings[i] = parse_hex_data(byte_str)
             else:
-                print(f"Warning: Empty byte string at index {i}")
-        return warnings
+                print(f"Warning: Incomplete byte string at index {i}: {byte_str}")
     except Exception as e:
         print(f"Error parsing BMS warning data: {e}")
-        return {}
+    return warnings
+
+
+
+
+
+
 
 def process_bms_data(info):
     warnings = parse_bms_warning_data(info)

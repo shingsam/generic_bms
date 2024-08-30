@@ -1142,7 +1142,7 @@ while code_running == True:
 
     if bms_connected == True:
         if mqtt_connected == True:
-            total_packs = 3
+            total_packs = 2
             read_all_packs(bms, total_packs)
             #success, data = bms_getAnalogData(bms,batNumber=0)
             if success != True:

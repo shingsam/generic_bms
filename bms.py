@@ -936,10 +936,13 @@ def bms_getPackCapacity(bms):
 def bms_getWarnInfo(bms):
 
     byte_index = 2
-    packsW = 1
+    #packsW = 1
     warnings = ""
 
-    success, inc_data = bms_request(bms,cid2=constants.cid2WarnInfo,info=b'FF')
+    battery = bytes(format(int(batNumber), '02X'), 'ASCII')
+
+    success, inc_data = bms_request(bms, cid2=constants.cid2WarnInfo, info=battery)
+    #success, inc_data = bms_request(bms,cid2=constants.cid2WarnInfo,info=b'FF')
 
     if success == False:
         return(False,inc_data)
@@ -963,7 +966,8 @@ def bms_getWarnInfo(bms):
 
                 if inc_data[byte_index:byte_index+2] != b'00':
                     warn = constants.warningStates[inc_data[byte_index:byte_index+2]]
-                    warnings += "cell " + str(c) + " " + warn + ", "
+                    #warnings += "cell " + str(c) + " " + warn + ", "
+                    warnings += f"Pack {p}, cell {c}: {warn}, "
                 byte_index += 2
 
             tempsW = int(inc_data[byte_index:byte_index+2],16)

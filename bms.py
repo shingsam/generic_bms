@@ -1126,39 +1126,26 @@ if success != True:
     quit()
 
 
-def bms_getAnalogData(bms, batNumber):
-    try:
-        battery = bytes(format(int(batNumber), '02X'), 'ASCII')
-        # Continue with the rest of your code...
-    except ValueError as e:
-        return False, f"Error formatting batNumber: {e}"
 
+while code_running == True:
 
+    if bms_connected == True:
+        if mqtt_connected == True:
+            for pack_number in range(1, 4):  # Assuming you have 3 packs
+                success, data = bms_getAnalogData(bms, batNumber=pack_number)
+                if success != True:
+                    print(f"Error retrieving BMS analog data for pack {pack_number}: " + data)
+                time.sleep(scan_interval/3)
 
-while code_running:
+            success, data = bms_getPackCapacity(bms)
+            if success != True:
+                print("Error retrieving BMS pack capacity: " + data)
+            time.sleep(scan_interval/3)
 
-    if bms_connected:
-        if mqtt_connected:
-
-            for pack_number in range(1, packs + 1):  # Loop through packs
-                # Convert pack_number to string and pass to the function
-                success, data = bms_getAnalogData(bms, batNumber=str(pack_number))
-                if not success:
-                    print(f"Error retrieving BMS analog data for pack {pack_number}: {data}")
-                
-                time.sleep(scan_interval / 3)
-
-                success, data = bms_getPackCapacity(bms, batNumber=str(pack_number))
-                if not success:
-                    print(f"Error retrieving BMS pack capacity for pack {pack_number}: {data}")
-                
-                time.sleep(scan_interval / 3)
-
-                success, data = bms_getWarnInfo(bms, batNumber=str(pack_number))
-                if not success:
-                    print(f"Error retrieving BMS warning info for pack {pack_number}: {data}")
-                
-                time.sleep(scan_interval / 3)
+            success, data = bms_getWarnInfo(bms)
+            if success != True:
+                print("Error retrieving BMS warning info: " + data)
+            time.sleep(scan_interval/3)
 
 
             

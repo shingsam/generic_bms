@@ -727,14 +727,9 @@ def bms_getAnalogData(bms,batNumber):
     #inc_data = b'000A100CF40CF40CF40CF50CF30CF40CF40CF30CF80CF30CF30CF30CF30CF50CF40CF4060B2E0B300B2D0B300B3B0B47FEFCCF406B58096D2700146D60626D606D606D606D6064D1180000100000000000000000000000000000000000000000000000000000000000000000060AAA0AAA0AAA0AAA0AAA0AAA000000000000090000000000006200000000000000006400000000100CF40CF40CF30CF40CF30CF40CF40CF40CF30CF30CF40CF40CF30CF30CF40CF2060B320B2F0B340B2C0B3D0B4AFEF6CF386B65096D2700146D60626D606D606D606D6064CF320000100CF30CF40CF40CF40CF40CF40CF40CF40CF40CF40CF40CF40CF40CF40CF40CF4060B330B320B2E0B340B410B48FEF9CF3F6B72096D2700146D60626D606D606D606D6064CFCC0000100CF40CF30CF40CF30CF40CF40CF30CF40CF30CF30CF30CF40CF30CF40CF30CF1060B330B2D0B2F0B340B3D0B48FF10CF646B7A096D2700146D60626D606D606D606D6064CFF70000100CF40CF30CF20CF20CF30CF20CF30CF10CF30CF30CF30CF20CF30CF30CF30CF1060B2D0B320B300B310B3C0B49FF11CF296B7F096D2A00136D60626D606D606D606D6064D0030000100CF40CF40CF40CF40CF40CF40CF40CF40CF40CF40CF40CF50CF40CF40CF40CF3060B310B2E0B310B2E0B400B4AFF1ACF4075580976EE00146D60636D606D606D606D6064CFD20000100CF30CF10CF40CF30CF30CF40CF30CF30CF10CF30CF40CF30CF30CF30CF30CF2060B300B2E0B2F0B330B3B0B42FF07CF636B50096D2400156D60626D606D606D606D6064CFCE0000100CF40CF40CF40CF40CF40CF40CF40CF40CF40CF40CF40CF40CF40CF40CF40CF3060B2B0B2D0B290B2F0B3B0B4BFF1BCF3F6B7F096D2D00126D60626D606D606D606D6064D1260000100CF40CF40CF40CF40CF40CF40CF40CF60CF30CF40CF40CF40CF40CF40CF40CF3060B2A0B2E0B2D0B2A0B390B43FF24CF406B5F096D2700146D60626D606D606D606D6064D0C70000'
 
 
-    #if success == False:
-    #    return(False,inc_data)
+    if success == False:
+        return(False,inc_data)
 
-    if success = True
-        inc_data = b'00020F0D030D030D030D040D050D050D050D050D060D060D060D060D080D060D06060BC20BC20BCC0BCA0BD80BE8000BC34627810028F600032710'
-        return success, inc_data
-    
-    
     try:
 
         packs = int(inc_data[byte_index:byte_index+2],16)
@@ -893,19 +888,6 @@ def bms_getAnalogData(bms,batNumber):
 
     return True,True
 
-
-def debug_bms_data(data):
-    print(f"Raw Data: {data}")
-    print(f"Data Length: {len(data)}")
-    print(f"Data Segments: {[data[i:i+2] for i in range(0, len(data), 2)]}")
-
-# Call this function to debug incoming data
-#debug_bms_data(data)
-
-
-
-
-
 def bms_getPackCapacity(bms):
 
     byte_index = 0
@@ -950,7 +932,6 @@ def bms_getPackCapacity(bms):
         return False, "Error parsing BMS pack capacity data: " + str(e)
 
     return True,True
-
 
 def bms_getWarnInfo(bms):
 
@@ -1127,54 +1108,7 @@ def bms_getWarnInfo(bms):
     return True,True
 
 
-
-
-
-
-#def parse_bms_warning_data(info):
-#    try:
-#        warnings = {}
-#        for i in range(0, len(info), 2):  # Example: parse 2 bytes at a time
-#            byte_str = info[i:i+2]
-#            if byte_str:
-#                warnings[i] = int(byte_str, 16)
-#            else:
-#                print(f"Warning: Empty byte string at index {i}")
-#        return warnings
-#    except Exception as e:
-#        print(f"Error parsing BMS warning data: {e}")
-#        return {}
-
-
-def parse_bms_warning_data(info):
-    warnings = {}
-    try:
-        if len(info) < 2:
-            print(f"Warning: Data is too short: {info}")
-            return warnings
-
-        for i in range(0, len(info), 2):
-            byte_str = info[i:i+2]
-            if len(byte_str) == 2:
-                warnings[i] = parse_hex_data(byte_str)
-            else:
-                print(f"Warning: Incomplete byte string at index {i}: {byte_str}")
-    except Exception as e:
-        print(f"Error parsing BMS warning data: {e}")
-    return warnings
-
-
-
-
-
-
-
-def process_bms_data(info):
-    warnings = parse_bms_warning_data(info)
-    # Further processing of warnings if needed
-    print(f"Parsed Warnings: {warnings}")
-
-print("Connecting to BMS.1.2.3...")
+print("Connecting to BMS...")
 bms,bms_connected = bms_connect(config['bms_ip'],config['bms_port'])
 
 client.publish(config['mqtt_base_topic'] + "/availability","offline")
@@ -1191,26 +1125,18 @@ if success != True:
     print("Error retrieving BMS and pack serial numbers. This is required for HA Discovery. Exiting...")
     quit()
 
-def parse_hex_data(hex_data):
-    try:
-        return int(hex_data, 16)
-    except ValueError:
-        print(f"Error parsing hex data: {hex_data}")
-        return None
-
 
 while code_running == True:
 
     if bms_connected == True:
         if mqtt_connected == True:
 
-            success, data = bms_getAnalogData(bms,batNumber=255)
-            time.sleep(scan_interval/3)
             success, data = bms_getAnalogData(bms,batNumber=2)
+            time.sleep(scan_interval/3)
+            success, data = bms_getAnalogData(bms,batNumber=255)
             if success != True:
                 print("Error retrieving BMS analog data: " + data)
             time.sleep(scan_interval/3)
-            
             success, data = bms_getPackCapacity(bms)
             if success != True:
                 print("Error retrieving BMS pack capacity: " + data)

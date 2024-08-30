@@ -700,7 +700,7 @@ def bms_getSerial(comms):
 
     return(success,bms_sn,pack_sn)
 
-def bms_getAnalogData(bms,batNumber=1):
+def bms_getAnalogData(bms,batNumber):
 
     global print_initial
     global cells
@@ -1131,8 +1131,8 @@ while code_running == True:
 
     if bms_connected == True:
         if mqtt_connected == True:
-            for pack_number in range(1, 4):
-            success, data = bms_getAnalogData(bms,batNumber=pack_number)
+            #for pack_number in range(1, 4):
+            success, data = bms_getAnalogData(bms,batNumber=0)
             if success != True:
                 print("Error retrieving BMS analog data: " + data)
             time.sleep(scan_interval/3)

@@ -1127,35 +1127,52 @@ if success != True:
 
 
 
-def read_all_packs(bms, total_packs):
+def get_pack_data(bms, pack_number):
+    """Fetch data for a specific battery pack."""
+    success, data = bms_getAnalogData(bms, batNumber=pack_number)
+    if success:
+        print(f"Successfully retrieved data for pack {pack_number}")
+        return data
+    else:
+        print(f"Error retrieving BMS analog data for pack {pack_number}: {data}")
+        return None
+
+def process_all_packs(bms, total_packs):
+    """Fetch and store data for all packs."""
+    pack_data = {}
     for pack_number in range(1, total_packs + 1):
-        success, data = bms_getAnalogData(bms, batNumber=pack_number)
-        if success:
-            print(f"Successfully retrieved data for pack {pack_number}")
-            # Process the data for this pack here
-        else:
-            print(f"Error retrieving BMS analog data for pack {pack_number}: {data}")
+        data = get_pack_data(bms, pack_number)
+        if data:
+            pack_data[pack_number] = data
+            # Further processing for each pack can be done here
         time.sleep(scan_interval / 3)  # Optional delay between requests
 
+    return pack_data
 
-while code_running == True:
 
-    if bms_connected == True:
-        if mqtt_connected == True:
-            total_packs = 2
-            read_all_packs(bms, total_packs)
-            #success, data = bms_getAnalogData(bms,batNumber=0)
-            if success != True:
-                print("Error retrieving BMS analog data: " + data)
-            time.sleep(scan_interval/3)
+
+
+while code_running:
+
+    if bms_connected:
+        if mqtt_connected:
+            total_packs = 3  # Assuming you have 3 packs
+            all_pack_data = process_all_packs(bms, total_packs)
+
+            # Example: Output the data for each pack
+            for pack_number, data in all_pack_data.items():
+                print(f"Pack {pack_number} data: {data}")
+
+            # Optionally handle pack capacity and warning info for each pack or globally
             success, data = bms_getPackCapacity(bms)
-            if success != True:
+            if not success:
                 print("Error retrieving BMS pack capacity: " + data)
-            time.sleep(scan_interval/3)
+            time.sleep(scan_interval / 3)
+
             success, data = bms_getWarnInfo(bms)
-            if success != True:
+            if not success:
                 print("Error retrieving BMS warning info: " + data)
-            time.sleep(scan_interval/3)
+            time.sleep(scan_interval / 3)
 
             if print_initial:
                 ha_discovery()

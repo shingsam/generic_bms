@@ -1131,7 +1131,8 @@ while code_running == True:
     if bms_connected == True:
         if mqtt_connected == True:
 
-            success, data = bms_getAnalogData(bms,batNumber=255)
+            #success, data = bms_getAnalogData(bms,batNumber=255)
+            success, data = bms_getAnalogData(bms,batNumber=2)
             if success != True:
                 print("Error retrieving BMS analog data: " + data)
             time.sleep(scan_interval/3)

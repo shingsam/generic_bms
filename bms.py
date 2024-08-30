@@ -1131,24 +1131,19 @@ while code_running == True:
 
     if bms_connected == True:
         if mqtt_connected == True:
-            for pack_number in range(1, 4):  # Assuming you have 3 packs
-                success, data = bms_getAnalogData(bms, batNumber=pack_number)
-                if success != True:
-                    print(f"Error retrieving BMS analog data for pack {pack_number}: " + data)
-                time.sleep(scan_interval/3)
-
+            for pack_number in range(1, 4):
+            success, data = bms_getAnalogData(bms,batNumber=pack_number)
+            if success != True:
+                print("Error retrieving BMS analog data: " + data)
+            time.sleep(scan_interval/3)
             success, data = bms_getPackCapacity(bms)
             if success != True:
                 print("Error retrieving BMS pack capacity: " + data)
             time.sleep(scan_interval/3)
-
             success, data = bms_getWarnInfo(bms)
             if success != True:
                 print("Error retrieving BMS warning info: " + data)
             time.sleep(scan_interval/3)
-
-
-            
 
             if print_initial:
                 ha_discovery()

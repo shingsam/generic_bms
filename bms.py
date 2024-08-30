@@ -700,7 +700,7 @@ def bms_getSerial(comms):
 
     return(success,bms_sn,pack_sn)
 
-def bms_getAnalogData(bms,batNumber):
+def bms_getAnalogData(bms,batNumber=1):
 
     global print_initial
     global cells

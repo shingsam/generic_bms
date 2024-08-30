@@ -1126,32 +1126,42 @@ if success != True:
     quit()
 
 
-while code_running == True:
+def bms_getAnalogData(bms, batNumber):
+    try:
+        battery = bytes(format(int(batNumber), '02X'), 'ASCII')
+        # Continue with the rest of your code...
+    except ValueError as e:
+        return False, f"Error formatting batNumber: {e}"
 
-    if bms_connected == True:
-        if mqtt_connected == True:
 
-            for pack_number in range(1, packs + 1):  # Assuming `packs` is the total number of packs
-                # Retrieve analog data for the current pack
+
+while code_running:
+
+    if bms_connected:
+        if mqtt_connected:
+
+            for pack_number in range(1, packs + 1):  # Loop through packs
+                # Convert pack_number to string and pass to the function
                 success, data = bms_getAnalogData(bms, batNumber=str(pack_number))
-                if success != True:
-                    print(f"Error retrieving BMS analog data for pack {pack_number}: " + data)
+                if not success:
+                    print(f"Error retrieving BMS analog data for pack {pack_number}: {data}")
                 
                 time.sleep(scan_interval / 3)
 
-                # Retrieve pack capacity for the current pack
                 success, data = bms_getPackCapacity(bms, batNumber=str(pack_number))
-                if success != True:
-                    print(f"Error retrieving BMS pack capacity for pack {pack_number}: " + data)
+                if not success:
+                    print(f"Error retrieving BMS pack capacity for pack {pack_number}: {data}")
                 
                 time.sleep(scan_interval / 3)
 
-                # Retrieve warning info for the current pack
                 success, data = bms_getWarnInfo(bms, batNumber=str(pack_number))
-                if success != True:
-                    print(f"Error retrieving BMS warning info for pack {pack_number}: " + data)
+                if not success:
+                    print(f"Error retrieving BMS warning info for pack {pack_number}: {data}")
                 
                 time.sleep(scan_interval / 3)
+
+
+            
 
             if print_initial:
                 ha_discovery()

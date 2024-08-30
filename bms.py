@@ -1131,20 +1131,27 @@ while code_running == True:
     if bms_connected == True:
         if mqtt_connected == True:
 
-            success, data = bms_getAnalogData(bms,batNumber=2)
-            time.sleep(scan_interval/3)
-            success, data = bms_getAnalogData(bms,batNumber=255)
-            if success != True:
-                print("Error retrieving BMS analog data: " + data)
-            time.sleep(scan_interval/3)
-            success, data = bms_getPackCapacity(bms)
-            if success != True:
-                print("Error retrieving BMS pack capacity: " + data)
-            time.sleep(scan_interval/3)
-            success, data = bms_getWarnInfo(bms)
-            if success != True:
-                print("Error retrieving BMS warning info: " + data)
-            time.sleep(scan_interval/3)
+            for pack_number in range(1, packs + 1):  # Assuming `packs` is the total number of packs
+                # Retrieve analog data for the current pack
+                success, data = bms_getAnalogData(bms, batNumber=str(pack_number))
+                if success != True:
+                    print(f"Error retrieving BMS analog data for pack {pack_number}: " + data)
+                
+                time.sleep(scan_interval / 3)
+
+                # Retrieve pack capacity for the current pack
+                success, data = bms_getPackCapacity(bms, batNumber=str(pack_number))
+                if success != True:
+                    print(f"Error retrieving BMS pack capacity for pack {pack_number}: " + data)
+                
+                time.sleep(scan_interval / 3)
+
+                # Retrieve warning info for the current pack
+                success, data = bms_getWarnInfo(bms, batNumber=str(pack_number))
+                if success != True:
+                    print(f"Error retrieving BMS warning info for pack {pack_number}: " + data)
+                
+                time.sleep(scan_interval / 3)
 
             if print_initial:
                 ha_discovery()

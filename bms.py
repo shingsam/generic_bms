@@ -1127,12 +1127,24 @@ if success != True:
 
 
 
+def read_all_packs(bms, total_packs):
+    for pack_number in range(1, total_packs + 1):
+        success, data = bms_getAnalogData(bms, batNumber=pack_number)
+        if success:
+            print(f"Successfully retrieved data for pack {pack_number}")
+            # Process the data for this pack here
+        else:
+            print(f"Error retrieving BMS analog data for pack {pack_number}: {data}")
+        time.sleep(scan_interval / 3)  # Optional delay between requests
+
+
 while code_running == True:
 
     if bms_connected == True:
         if mqtt_connected == True:
-            #for pack_number in range(1, 4):
-            success, data = bms_getAnalogData(bms,batNumber=0)
+            total_packs = 3
+            read_all_packs(bms, total_packs)
+            #success, data = bms_getAnalogData(bms,batNumber=0)
             if success != True:
                 print("Error retrieving BMS analog data: " + data)
             time.sleep(scan_interval/3)

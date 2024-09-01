@@ -47,9 +47,9 @@ disc_payload = {}
 repub_discovery = 0
 
 bms_version = ''
-bms_sn = 'sn1'
+bms_sn = ''
 pack_sn = ''
-packs = 4
+packs = 2
 cells = 16
 temps = 6
 
@@ -68,7 +68,7 @@ def on_disconnect(client, userdata, rc):
     mqtt_connected = False
 
 
-client = mqtt.Client("bmspace")
+client = mqtt.Client("generic_bms")
 client.on_connect = on_connect
 client.on_disconnect = on_disconnect
 #client.on_message = on_message
@@ -177,10 +177,10 @@ def ha_discovery():
         disc_payload['availability_topic'] = config['mqtt_base_topic'] + "/availability"
 
         device = {}
-        device['manufacturer'] = "BMS Pace"
-        device['model'] = "STD1-T4"
-        device['identifiers'] = "bmspace_" + bms_sn
-        device['name'] = "LIFePO"
+        device['manufacturer'] = "Generic BMS"
+        device['model'] = "DNS-x"
+        device['identifiers'] = "generic_bms_" + bms_sn
+        device['name'] = "Generic BMS x"
         device['sw_version'] = bms_version
         disc_payload['device'] = device
 

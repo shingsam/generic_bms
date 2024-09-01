@@ -48,7 +48,7 @@ repub_discovery = 0
 bms_version = ''
 bms_sn = ''
 pack_sn = ''
-packs = 2
+packs = config['total_pack']
 cells = 16
 temps = 6
 

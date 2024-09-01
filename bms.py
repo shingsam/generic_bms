@@ -1099,7 +1099,7 @@ if success != True:
 
 
 # Not used anymore
- time.sleep(0.1)
+# time.sleep(0.1)
  success, data = bms_getPackNumber(bms)
  if success == True:
      print("Batteries in pack: ", data)

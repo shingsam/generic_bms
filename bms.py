@@ -842,7 +842,7 @@ while code_running == True:
     if bms_connected == True:
         if mqtt_connected == True:
             a = '{0:02d}'.format(addr).encode() 
-            success, inc_data = bms_request(bms, ver=b'25', adr=a, cid1 = b'4A', cid2 = b'42', info = a)
+            success, inc_data = bms_request(bms, ver=b'25', adr='2', cid1 = b'4A', cid2 = b'42', info = a)
 
             addr = (addr + 1) % packs
             bms_ReadBms(bms)

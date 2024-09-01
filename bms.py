@@ -1100,18 +1100,18 @@ if success != True:
 
 # Not used anymore
 # time.sleep(0.1)
- success, data = bms_getPackNumber(bms)
- if success == True:
-     print("Batteries in pack: ", data)
- else:
-     print("Error retrieving number of batteries in pack")
+# success, data = bms_getPackNumber(bms)
+# if success == True:
+#     print("Batteries in pack: ", data)
+# else:
+#     print("Error retrieving number of batteries in pack")
 
 while code_running == True:
 
     if bms_connected == True:
         if mqtt_connected == True:
 
-            success, data = bms_getAnalogData(bms,batNumber=255)
+            success, data = bms_getAnalogData(bms,batNumber=1)
             if success != True:
                 print("Error retrieving BMS analog data: " + data)
             time.sleep(scan_interval/3)
@@ -1124,6 +1124,21 @@ while code_running == True:
                 print("Error retrieving BMS warning info: " + data)
             time.sleep(scan_interval/3)
 
+
+            success, data = bms_getAnalogData(bms,batNumber=2)
+            if success != True:
+                print("Error retrieving BMS analog data: " + data)
+            time.sleep(scan_interval/3)
+            success, data = bms_getPackCapacity(bms)
+            if success != True:
+                print("Error retrieving BMS pack capacity: " + data)
+            time.sleep(scan_interval/3)
+            success, data = bms_getWarnInfo(bms)
+            if success != True:
+                print("Error retrieving BMS warning info: " + data)
+            time.sleep(scan_interval/3)
+
+            
             if print_initial:
                 ha_discovery()
                 

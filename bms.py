@@ -1091,6 +1091,10 @@ success, data = bms_getVersion(bms)
 if success != True:
     print("Error retrieving BMS version number")
 
+success, data = bms_getVersion(bms,batNumber=2)
+if success != True:
+    print("Error retrieving BMS version number2")
+
 time.sleep(0.1)
 success, bms_sn, pack_sn = bms_getSerial(bms)
 if success != True:

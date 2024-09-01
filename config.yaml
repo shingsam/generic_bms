@@ -27,6 +27,7 @@ options:
   bms_port: 5000
   bms_serial: "/dev/ttyUSB0"
   scan_interval: 5
+  total_pack: 2
   debug_output: 0
   force_pack_offset: 0
   zero_pad_number_cells: 0
@@ -45,6 +46,7 @@ schema:
   bms_serial: str
   scan_interval: int
   debug_output: int
+  total_pack: "int?"
   force_pack_offset: "int?"
   zero_pad_number_cells: "int?"
   zero_pad_number_packs: "int?"

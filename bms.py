@@ -1154,7 +1154,7 @@ while code_running == True:
               for _ in range(requests_per_battery):
                   print(f"Querying battery {battery_number}...")
                   success, data = bms_getAnalogData(bms, batNumber=battery_number)
-                if not success:
+                if success != True:
                     print(f"Error retrieving BMS analog data for battery {battery_number}: {data}")
                 else:
                     parsed_data = parse_bms_analog_data(data)

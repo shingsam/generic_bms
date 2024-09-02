@@ -1151,23 +1151,11 @@ while code_running == True:
         if mqtt_connected == True:
 
             for battery_number in batteries:
-              for _ in range(requests_per_battery):
-                  print(f"Querying battery {battery_number}...")
-                  success, data = bms_getAnalogData(bms, batNumber=battery_number)
-                if success != True:
-                    print(f"Error retrieving BMS analog data for battery {battery_number}: {data}")
-                else:
-                    parsed_data = parse_bms_analog_data(data)
-                    if parsed_data is not None:
-                        print(f"Data for battery {battery_number}: {parsed_data}")
-                    else:
-                        print(f"Failed to parse data for battery {battery_number}")
-                time.sleep(scan_interval / (2 * len(batteries)))  # Adjust sleep time based on number of batteries
-            
-            #success, data = bms_getAnalogData(bms,batNumber=255)
-            #if success != True:
-            #    print("Error retrieving BMS analog data: " + data)
-            #time.sleep(scan_interval/3)
+
+            success, data = bms_getAnalogData(bms,batNumber=battery_number)
+            if success != True:
+                print("Error retrieving BMS analog data: " + data)
+            time.sleep(scan_interval/3)
             
             success, data = bms_getPackCapacity(bms)
             if success != True:

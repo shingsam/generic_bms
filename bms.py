@@ -1124,16 +1124,24 @@ if success != True:
     print("Error retrieving BMS and pack serial numbers. This is required for HA Discovery. Exiting...")
     quit()
 
+batteries = [1, 2]
 
 while code_running == True:
 
     if bms_connected == True:
         if mqtt_connected == True:
 
-            success, data = bms_getAnalogData(bms,batNumber=255)
-            if success != True:
-                print("Error retrieving BMS analog data: " + data)
-            time.sleep(scan_interval/3)
+            for battery_number in batteries:
+                success, data = bms_getAnalogData(bms, batNumber=battery_number)
+                if not success:
+                    print(f"Error retrieving BMS analog data for battery {battery_number}: {data}")
+                time.sleep(scan_interval / (2 * len(batteries)))  # Adjust sleep time based on number of batteries
+            
+            #success, data = bms_getAnalogData(bms,batNumber=255)
+            #if success != True:
+            #    print("Error retrieving BMS analog data: " + data)
+            #time.sleep(scan_interval/3)
+            
             success, data = bms_getPackCapacity(bms)
             if success != True:
                 print("Error retrieving BMS pack capacity: " + data)

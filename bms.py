@@ -715,9 +715,7 @@ def bms_getAnalogData(bms,batNumber):
     soc = []
     soh = []
     
-    #cid2PackNumber = cid2PackNumber if cid2PackNumber is not None else 255
-    battery = bytes(format(cid2PackNumber, '02X'), 'ASCII')
-    #battery = bytes(format(batNumber, '02X'), 'ASCII')
+    battery = bytes(format(batNumber, '02X'), 'ASCII')
 
     success, inc_data = bms_request(bms,cid2=constants.cid2PackAnalogData,info=battery)
 

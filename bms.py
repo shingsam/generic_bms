@@ -715,7 +715,7 @@ def bms_getAnalogData(bms,batNumber):
     soc = []
     soh = []
     
-    cid2PackNumber = cid2PackNumber if cid2PackNumber is not None else 255
+    #cid2PackNumber = cid2PackNumber if cid2PackNumber is not None else 255
     battery = bytes(format(cid2PackNumber, '02X'), 'ASCII')
     #battery = bytes(format(batNumber, '02X'), 'ASCII')
 
@@ -1132,7 +1132,7 @@ while code_running == True:
     if bms_connected == True:
         if mqtt_connected == True:
 
-            success, data = bms_getAnalogData(bms,batNumber=str(packs))
+            success, data = bms_getAnalogData(bms,batNumber=255)
             if success != True:
                 print("Error retrieving BMS analog data: " + data)
             time.sleep(scan_interval/3)

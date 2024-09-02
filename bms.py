@@ -1124,6 +1124,24 @@ if success != True:
     print("Error retrieving BMS and pack serial numbers. This is required for HA Discovery. Exiting...")
     quit()
 
+def parse_bms_warning_data(data):
+    try:
+        # Assuming `data` is a hex string and needs to be parsed
+        # Convert the hex string to an integer
+        return int(data, 16)
+    except ValueError as e:
+        print(f"Error parsing BMS warning data: {e}")
+        return None
+
+def parse_bms_analog_data(data):
+    try:
+        # Assuming `data` is a hex string and needs to be parsed
+        # Convert the hex string to an integer
+        return int(data, 16)
+    except ValueError as e:
+        print(f"Error parsing BMS analog data: {e}")
+        return None
+
 batteries = [1, 2]
 requests_per_battery = 2
 
@@ -1138,6 +1156,12 @@ while code_running == True:
                   success, data = bms_getAnalogData(bms, batNumber=battery_number)
                 if not success:
                     print(f"Error retrieving BMS analog data for battery {battery_number}: {data}")
+                else:
+                    parsed_data = parse_bms_analog_data(data)
+                    if parsed_data is not None:
+                        print(f"Data for battery {battery_number}: {parsed_data}")
+                    else:
+                        print(f"Failed to parse data for battery {battery_number}")
                 time.sleep(scan_interval / (2 * len(batteries)))  # Adjust sleep time based on number of batteries
             
             #success, data = bms_getAnalogData(bms,batNumber=255)

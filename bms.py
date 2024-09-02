@@ -585,7 +585,7 @@ def lchksum_calc(lenid):
 
     return(chksum)
 
-def bms_request(bms, ver=b"\x32\x35",adr=b"\x30\x31",cid1=b"\x34\x36",cid2=b"\x43\x31",info=b"",LENID=False):
+def bms_request(bms, ver=b"\x32\x35",adr=b"\x30\x30",cid1=b"\x34\x36",cid2=b"\x43\x31",info=b"",LENID=False):
 
     global bms_connected
     global debug_output
@@ -641,7 +641,7 @@ def bms_request(bms, ver=b"\x32\x35",adr=b"\x30\x31",cid1=b"\x34\x36",cid2=b"\x4
     return(success, INFO)
 
 def bms_getPackNumber(bms):
-
+    
     success, INFO = bms_request(bms,cid2=constants.cid2PackNumber)
 
     if success == False:
@@ -714,8 +714,10 @@ def bms_getAnalogData(bms,batNumber):
     i_full_cap = []
     soc = []
     soh = []
-
-    battery = bytes(format(batNumber, '02X'), 'ASCII')
+    
+    cid2PackNumber = cid2PackNumber if cid2PackNumber is not None else 255
+    battery = bytes(format(cid2PackNumber, '02X'), 'ASCII')
+    #battery = bytes(format(batNumber, '02X'), 'ASCII')
 
     success, inc_data = bms_request(bms,cid2=constants.cid2PackAnalogData,info=battery)
 
@@ -1130,7 +1132,7 @@ while code_running == True:
     if bms_connected == True:
         if mqtt_connected == True:
 
-            success, data = bms_getAnalogData(bms,batNumber=3)
+            success, data = bms_getAnalogData(bms,batNumber=str(packs))
             if success != True:
                 print("Error retrieving BMS analog data: " + data)
             time.sleep(scan_interval/3)

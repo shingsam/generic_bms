@@ -1142,17 +1142,12 @@ def parse_bms_analog_data(data):
         print(f"Error parsing BMS analog data: {e}")
         return None
 
-batteries = [1, 2]
-requests_per_battery = 2
-
 while code_running == True:
 
     if bms_connected == True:
         if mqtt_connected == True:
 
-            for battery_number in batteries:
-
-            success, data = bms_getAnalogData(bms,batNumber=battery_number)
+            success, data = bms_getAnalogData(bms,batNumber=1)
             if success != True:
                 print("Error retrieving BMS analog data: " + data)
             time.sleep(scan_interval/3)
@@ -1166,6 +1161,24 @@ while code_running == True:
                 print("Error retrieving BMS warning info: " + data)
             time.sleep(scan_interval/3)
 
+
+
+            success, data1 = bms_getAnalogData(bms,batNumber=2)
+            if success != True:
+                print("Error retrieving BMS analog data: " + data1)
+            time.sleep(scan_interval/3)
+            
+            success, data1 = bms_getPackCapacity(bms)
+            if success != True:
+                print("Error retrieving BMS pack capacity: " + data1)
+            time.sleep(scan_interval/3)
+            success, data1 = bms_getWarnInfo(bms)
+            if success != True:
+                print("Error retrieving BMS warning info: " + data1)
+            time.sleep(scan_interval/3)
+            
+            
+            
             if print_initial:
                 ha_discovery()
                 
